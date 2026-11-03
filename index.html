@@ -1,14 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FACTUSOL Aula Online</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FACTUSOL Aula Online</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#edf2f7;margin:0;padding:30px}
+main{max-width:430px;margin:50px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 4px 18px #0002}
+h1{color:#174c78}label{display:block;margin-top:16px}
+input,button{box-sizing:border-box;width:100%;padding:12px;margin-top:6px}
+button{background:#1769aa;color:white;border:0;border-radius:6px;cursor:pointer}
+#message{margin-top:18px} .hidden{display:none}
+</style>
 </head>
 <body>
-  <h1>FACTUSOL Aula Online</h1>
-  <p>Simulador educativo de gestión comercial</p>
-  <p>Second Chance Christmas, S.L.</p>
-  <p>Aplicación en preparación.</p>
+<main>
+<h1>FACTUSOL Aula Online</h1>
+<p>Second Chance Christmas, S.L.</p>
+<section id="login">
+<label>Correo electrónico</label>
+<input id="email" type="email" autocomplete="username">
+<label>Contraseña</label>
+<input id="password" type="password" autocomplete="current-password">
+<button id="loginButton">Entrar</button>
+</section>
+<section id="session" class="hidden">
+<p id="welcome"></p>
+<button id="logoutButton">Cerrar sesión</button>
+</section>
+<p id="message" role="status"></p>
+</main>
+<script>
+const SUPABASE_URL = "https://qeioiuvzufkvpbseglbx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Rv1snC-PIsLpl5MJJYU1ng_rc_YHYk3
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const message = document.getElementById("message");
+function showSession(user){
+ document.getElementById("login").classList.toggle("hidden",!!user);
+ document.getElementById("session").classList.toggle("hidden",!user);
+ document.getElementById("welcome").textContent=user?"Sesión iniciada: "+user.email:"";
+}
+document.getElementById("loginButton").onclick=async()=>{
+ message.textContent="Comprobando acceso...";
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error){message.textContent="No se pudo iniciar sesión. Comprueba tus datos.";return;}
+ document.getElementById("password").value="";
+ message.textContent="Acceso correcto.";
+ showSession(data.user);
+};
+document.getElementById("logoutButton").onclick=async()=>{
+ await db.auth.signOut();
+ showSession(null);
+ message.textContent="Sesión cerrada.";
+};
+db.auth.getUser().then(({data,error})=>showSession(error?null:data.user));
+</script>
 </body>
 </html>
