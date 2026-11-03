@@ -28,6 +28,9 @@ button{background:#1769aa;color:white;border:0;border-radius:6px;cursor:pointer}
 <section id="session" class="hidden">
 <p id="welcome"></p>
 <button id="logoutButton">Cerrar sesión</button>
+ <button id="checkRoleButton">
+  Comprobar mi rol
+</button>
 </section>
 <p id="message" role="status"></p>
 </main>
@@ -36,6 +39,29 @@ const SUPABASE_URL = "https://qeioiuvzufkvpbseglbx.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Rv1snC-PIsLpl5MJJYU1ng_rc_YHYk3";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const message = document.getElementById("message");
+ async function comprobarRolProfesor() {
+  const { data: { user }, error: authError } = await db.auth.getUser();
+
+  if (authError || !user) {
+    message.textContent = "Debes iniciar sesión.";
+    return;
+  }
+
+  const { data: perfil, error } = await db
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (error) {
+    message.textContent = "No se pudo comprobar el perfil.";
+    return;
+  }
+
+  message.textContent = perfil.role === "teacher"
+    ? "Rol verificado: profesor."
+    : "Rol verificado: alumno.";
+}
 function showSession(user){
  document.getElementById("login").classList.toggle("hidden",!!user);
  document.getElementById("session").classList.toggle("hidden",!user);
@@ -56,6 +82,8 @@ document.getElementById("logoutButton").onclick=async()=>{
  showSession(null);
  message.textContent="Sesión cerrada.";
 };
+document.getElementById("checkRoleButton")
+  .onclick = comprobarRolProfesor; 
 db.auth.getUser().then(({data,error})=>showSession(error?null:data.user));
 </script>
 </body>
