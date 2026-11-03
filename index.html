@@ -1,90 +1,687 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FACTUSOL Aula Online</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-body{font-family:Arial,sans-serif;background:#edf2f7;margin:0;padding:30px}
-main{max-width:430px;margin:50px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 4px 18px #0002}
-h1{color:#174c78}label{display:block;margin-top:16px}
-input,button{box-sizing:border-box;width:100%;padding:12px;margin-top:6px}
-button{background:#1769aa;color:white;border:0;border-radius:6px;cursor:pointer}
-#message{margin-top:18px} .hidden{display:none}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #edf2f7;
+  margin: 0;
+  padding: 25px;
+  color: #263746;
+}
+
+main {
+  max-width: 900px;
+  margin: 35px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px #0002;
+}
+
+h1, h2, h3 {
+  color: #174c78;
+}
+
+h1 {
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #64748b;
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin-top: 16px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+button {
+  padding: 12px 18px;
+  margin-top: 15px;
+  background: #1769aa;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+button:hover {
+  background: #125487;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+#loginButton {
+  width: 100%;
+}
+
+.secondary {
+  background: #64748b;
+}
+
+.secondary:hover {
+  background: #475569;
+}
+
+#message {
+  margin-top: 18px;
+  min-height: 20px;
+}
+
+.error {
+  color: #b42318;
+}
+
+.success {
+  color: #16703a;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.teacher-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.teacher-card {
+  background: #eef4fa;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #d5e1ed;
+}
+
+.teacher-card h3 {
+  margin-top: 0;
+}
+
+.teacher-card p {
+  color: #526579;
+}
+
+.teacher-card button {
+  width: 100%;
+}
+
+.session-box {
+  background: #f1f5f9;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  main {
+    padding: 20px;
+    margin: 15px auto;
+  }
+
+  .teacher-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <main>
-<h1>FACTUSOL Aula Online</h1>
-<p>Second Chance Christmas, S.L.</p>
+
+<header>
+  <h1>FACTUSOL Aula Online</h1>
+  <p class="subtitle">
+    Second Chance Christmas, S.L.
+  </p>
+</header>
+
+<!-- ACCESO -->
+
 <section id="login">
-<label>Correo electrónico</label>
-<input id="email" type="email" autocomplete="username">
-<label>Contraseña</label>
-<input id="password" type="password" autocomplete="current-password">
-<button id="loginButton">Entrar</button>
+
+  <h2>Iniciar sesión</h2>
+
+  <form id="loginForm">
+
+    <label for="email">Correo electrónico</label>
+    <input
+      id="email"
+      type="email"
+      autocomplete="username"
+      required
+    >
+
+    <label for="password">Contraseña</label>
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password"
+      required
+    >
+
+    <button id="loginButton" type="submit">
+      Entrar
+    </button>
+
+  </form>
+
 </section>
+
+<!-- SESIÓN -->
+
 <section id="session" class="hidden">
-<p id="welcome"></p>
-<button id="logoutButton">Cerrar sesión</button>
- <button id="checkRoleButton">
-  Comprobar mi rol
-</button>
+
+  <div class="session-box">
+
+    <p id="welcome"></p>
+    <p id="roleText"></p>
+
+    <button id="checkRoleButton" type="button">
+      Comprobar mi rol
+    </button>
+
+    <button
+      id="logoutButton"
+      type="button"
+      class="secondary"
+    >
+      Cerrar sesión
+    </button>
+
+  </div>
+
 </section>
-<p id="message" role="status"></p>
+
+<p id="message" role="status" aria-live="polite"></p>
+
+<!-- PANEL PROFESOR -->
+
+<section id="teacherPanel" class="hidden">
+
+  <h2>Panel del profesor</h2>
+
+  <p>
+    Bienvenido a FACTUSOL Aula Online.
+    Desde aquí podrás gestionar las actividades
+    de formación.
+  </p>
+
+  <div class="teacher-grid">
+
+    <div class="teacher-card">
+      <h3>Alumnos</h3>
+      <p>Gestionar estudiantes del aula.</p>
+      <button type="button" data-module="Alumnos">
+        Acceder
+      </button>
+    </div>
+
+    <div class="teacher-card">
+      <h3>Prácticas</h3>
+      <p>Organizar ejercicios de FACTUSOL.</p>
+      <button type="button" data-module="Prácticas">
+        Acceder
+      </button>
+    </div>
+
+    <div class="teacher-card">
+      <h3>Empresas</h3>
+      <p>Gestionar empresas de simulación.</p>
+      <button type="button" data-module="Empresas">
+        Acceder
+      </button>
+    </div>
+
+    <div class="teacher-card">
+      <h3>Resultados</h3>
+      <p>Consultar y evaluar el aprendizaje.</p>
+      <button type="button" data-module="Resultados">
+        Acceder
+      </button>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- PANEL ALUMNO -->
+
+<section id="studentPanel" class="hidden">
+
+  <h2>Panel del alumno</h2>
+
+  <p>
+    Bienvenido al aula de formación de FACTUSOL.
+  </p>
+
+  <div class="teacher-grid">
+
+    <div class="teacher-card">
+      <h3>Mis prácticas</h3>
+      <p>Consulta tus ejercicios asignados.</p>
+      <button type="button" data-module="Mis prácticas">
+        Acceder
+      </button>
+    </div>
+
+    <div class="teacher-card">
+      <h3>Mi empresa</h3>
+      <p>Consulta tu empresa de simulación.</p>
+      <button type="button" data-module="Mi empresa">
+        Acceder
+      </button>
+    </div>
+
+    <div class="teacher-card">
+      <h3>Mis resultados</h3>
+      <p>Consulta tus evaluaciones.</p>
+      <button type="button" data-module="Mis resultados">
+        Acceder
+      </button>
+    </div>
+
+  </div>
+
+</section>
+
 </main>
+
 <script>
-const SUPABASE_URL = "https://qeioiuvzufkvpbseglbx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Rv1snC-PIsLpl5MJJYU1ng_rc_YHYk3";
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+"use strict";
+
+// CONFIGURACIÓN SUPABASE
+
+const SUPABASE_URL =
+  "https://qeioiuvzufkvpbseglbx.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_Rv1snC-PIsLpl5MJJYU1ng_rc_YHYk3";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+// ELEMENTOS
+
+const login = document.getElementById("login");
+const session = document.getElementById("session");
+const teacherPanel = document.getElementById("teacherPanel");
+const studentPanel = document.getElementById("studentPanel");
+
+const loginForm = document.getElementById("loginForm");
+const loginButton = document.getElementById("loginButton");
+const logoutButton = document.getElementById("logoutButton");
+const checkRoleButton =
+  document.getElementById("checkRoleButton");
+
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+
+const welcome = document.getElementById("welcome");
+const roleText = document.getElementById("roleText");
 const message = document.getElementById("message");
- async function comprobarRolProfesor() {
-  const { data: { user }, error: authError } = await db.auth.getUser();
 
-  if (authError || !user) {
-    message.textContent = "Debes iniciar sesión.";
+let sessionVersion = 0;
+
+// MENSAJES
+
+function showMessage(text, type = "") {
+  message.textContent = text;
+  message.className = type;
+}
+
+// OCULTAR PANELES
+
+function hidePanels() {
+  teacherPanel.classList.add("hidden");
+  studentPanel.classList.add("hidden");
+}
+
+// MOSTRAR SESIÓN
+
+function showSession(user) {
+
+  const authenticated = Boolean(user);
+
+  login.classList.toggle("hidden", authenticated);
+  session.classList.toggle("hidden", !authenticated);
+
+  hidePanels();
+
+  if (authenticated) {
+    welcome.textContent =
+      "Sesión iniciada: " + (user.email || "");
+    roleText.textContent = "Comprobando rol...";
+  } else {
+    welcome.textContent = "";
+    roleText.textContent = "";
+  }
+}
+
+// COMPROBAR ROL
+
+async function comprobarRolProfesor() {
+
+  const currentVersion = sessionVersion;
+
+  hidePanels();
+
+  try {
+
+    const {
+      data: { user },
+      error: authError
+    } = await db.auth.getUser();
+
+    if (currentVersion !== sessionVersion) return;
+
+    if (authError || !user) {
+      showSession(null);
+      showMessage("Debes iniciar sesión.", "error");
+      return;
+    }
+
+    const { data: perfil, error } = await db
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (currentVersion !== sessionVersion) return;
+
+    if (error || !perfil) {
+      roleText.textContent = "Rol no disponible";
+      showMessage(
+        "No se pudo comprobar tu perfil.",
+        "error"
+      );
+      return;
+    }
+
+    const role = perfil.role;
+
+    if (role === "teacher") {
+
+      roleText.textContent = "Rol: Profesor";
+      teacherPanel.classList.remove("hidden");
+
+      showMessage(
+        "Acceso al panel del profesor autorizado.",
+        "success"
+      );
+
+    } else if (role === "student") {
+
+      roleText.textContent = "Rol: Alumno";
+      studentPanel.classList.remove("hidden");
+
+      showMessage(
+        "Acceso al panel del alumno autorizado.",
+        "success"
+      );
+
+    } else {
+
+      roleText.textContent = "Rol sin asignar";
+
+      showMessage(
+        "Tu usuario no tiene un rol válido.",
+        "error"
+      );
+
+    }
+
+  } catch (error) {
+
+    if (currentVersion !== sessionVersion) return;
+
+    console.error("Error al comprobar rol:", error);
+
+    showMessage(
+      "Error de conexión al comprobar el rol.",
+      "error"
+    );
+
+  }
+}
+
+// INICIAR SESIÓN
+
+loginForm.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!email || !password) {
+    showMessage(
+      "Introduce correo y contraseña.",
+      "error"
+    );
     return;
   }
 
-  const { data: perfil, error } = await db
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  loginButton.disabled = true;
+  showMessage("Comprobando acceso...");
 
-  if (error) {
-    message.textContent = "No se pudo comprobar el perfil.";
-    return;
+  try {
+
+    const { data, error } =
+      await db.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if (error) {
+      showMessage(
+        "No se pudo iniciar sesión. Comprueba tus datos.",
+        "error"
+      );
+      return;
+    }
+
+    passwordInput.value = "";
+
+    showSession(data.user);
+
+    await comprobarRolProfesor();
+
+  } catch (error) {
+
+    console.error("Error de acceso:", error);
+
+    showMessage(
+      "No se pudo conectar con el servidor.",
+      "error"
+    );
+
+  } finally {
+
+    loginButton.disabled = false;
+
   }
 
-  message.textContent = perfil.role === "teacher"
-    ? "Rol verificado: profesor."
-    : "Rol verificado: alumno.";
+});
+
+// CERRAR SESIÓN
+
+logoutButton.addEventListener("click", async () => {
+
+  logoutButton.disabled = true;
+
+  try {
+
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+      showMessage(
+        "No se pudo cerrar la sesión.",
+        "error"
+      );
+      return;
+    }
+
+    sessionVersion++;
+    showSession(null);
+    passwordInput.value = "";
+
+    showMessage("Sesión cerrada.", "success");
+
+  } catch (error) {
+
+    console.error("Error al cerrar sesión:", error);
+
+    showMessage(
+      "Error al cerrar sesión.",
+      "error"
+    );
+
+  } finally {
+
+    logoutButton.disabled = false;
+
+  }
+
+});
+
+// COMPROBAR ROL MANUALMENTE
+
+checkRoleButton.addEventListener(
+  "click",
+  comprobarRolProfesor
+);
+
+// MÓDULOS PENDIENTES DE DESARROLLO
+
+document.querySelectorAll("[data-module]").forEach(button => {
+
+  button.addEventListener("click", () => {
+
+    const moduleName = button.dataset.module;
+
+    showMessage(
+      "El módulo " + moduleName +
+      " todavía está pendiente de desarrollo."
+    );
+
+  });
+
+});
+
+// CAMBIOS DE AUTENTICACIÓN
+
+db.auth.onAuthStateChange((event, authSession) => {
+
+  if (event === "SIGNED_OUT") {
+
+    sessionVersion++;
+    showSession(null);
+
+  } else if (event === "SIGNED_IN") {
+
+    sessionVersion++;
+    showSession(authSession?.user || null);
+
+    // Se ejecuta fuera del callback de autenticación
+    setTimeout(() => {
+      comprobarRolProfesor();
+    }, 0);
+
+  }
+
+});
+
+// RECUPERAR SESIÓN
+
+async function initializeApp() {
+
+  showMessage("Comprobando sesión...");
+
+  try {
+
+    const {
+      data: { session: currentSession },
+      error
+    } = await db.auth.getSession();
+
+    if (error || !currentSession) {
+
+      showSession(null);
+      showMessage("");
+      return;
+
+    }
+
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
+
+    if (userError || !userData.user) {
+
+      showSession(null);
+      showMessage(
+        "No se pudo verificar la sesión.",
+        "error"
+      );
+      return;
+
+    }
+
+    showSession(userData.user);
+
+    await comprobarRolProfesor();
+
+  } catch (error) {
+
+    console.error("Error al recuperar sesión:", error);
+
+    showSession(null);
+    showMessage(
+      "No se pudo recuperar la sesión.",
+      "error"
+    );
+
+  }
+
 }
-function showSession(user){
- document.getElementById("login").classList.toggle("hidden",!!user);
- document.getElementById("session").classList.toggle("hidden",!user);
- document.getElementById("welcome").textContent=user?"Sesión iniciada: "+user.email:"";
-}
-document.getElementById("loginButton").onclick=async()=>{
- message.textContent="Comprobando acceso...";
- const email=document.getElementById("email").value.trim();
- const password=document.getElementById("password").value;
- const {data,error}=await db.auth.signInWithPassword({email,password});
- if(error){message.textContent="No se pudo iniciar sesión. Comprueba tus datos.";return;}
- document.getElementById("password").value="";
- message.textContent="Acceso correcto.";
- showSession(data.user);
-};
-document.getElementById("logoutButton").onclick=async()=>{
- await db.auth.signOut();
- showSession(null);
- message.textContent="Sesión cerrada.";
-};
-document.getElementById("checkRoleButton")
-  .onclick = comprobarRolProfesor; 
-db.auth.getUser().then(({data,error})=>showSession(error?null:data.user));
+
+initializeApp();
+
 </script>
+
 </body>
 </html>
